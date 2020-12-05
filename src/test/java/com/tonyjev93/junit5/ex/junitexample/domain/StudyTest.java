@@ -42,25 +42,28 @@ class StudyTest {
     @Test
     @DisplayName("Assert 총집합")
     @Order(1)
-    void assertEqualsTest() {
+    void assertTest() {
+        Boolean passYn = true;
 
-        //true
-        assertAll(
-                () -> assertEquals("B", "B", "값이 다릅니다."),
-                () -> assertNotNull("", "값이 Null이면 안됩니다."),
-                () -> assertTrue(true, "True가 아닙니다."),
-                () -> assertThrows(AssertionError.class, () -> assertTrue(false)),
-                () -> assertTimeout(Duration.ofMillis(1000), () -> Thread.sleep(500), "타임아웃 발생")
-        );
-
-        // false
-        assertAll(
-                () -> assertEquals("A", "B", "값이 다릅니다."),
-                () -> assertNotNull(null, "값이 Null이면 안됩니다."),
-                () -> assertTrue(false, "True가 아닙니다."),
-                () -> assertThrows(RuntimeException.class, () -> assertTrue(false)),
-                () -> assertTimeout(Duration.ofMillis(1000), () -> Thread.sleep(1005), "타임아웃 발생")
-        );
+        if (passYn) {
+            //true
+            assertAll(
+                    () -> assertEquals("B", "B", "값이 다릅니다."),
+                    () -> assertNotNull("", "값이 Null이면 안됩니다."),
+                    () -> assertTrue(true, "True가 아닙니다."),
+                    () -> assertThrows(AssertionError.class, () -> assertTrue(false)),
+                    () -> assertTimeout(Duration.ofMillis(1000), () -> Thread.sleep(500), "타임아웃 발생")
+            );
+        } else {
+            // false
+            assertAll(
+                    () -> assertEquals("A", "B", "값이 다릅니다."),
+                    () -> assertNotNull(null, "값이 Null이면 안됩니다."),
+                    () -> assertTrue(false, "True가 아닙니다."),
+                    () -> assertThrows(RuntimeException.class, () -> assertTrue(false)),
+                    () -> assertTimeout(Duration.ofMillis(1000), () -> Thread.sleep(1005), "타임아웃 발생")
+            );
+        }
     }
 
     @Test
