@@ -17,11 +17,22 @@ public class StudyService {
     }
 
     public Optional<Study> createNewStudy(Long l, Study study) {
-
+//        memberService.validate(l);
         Optional<Member> member = memberService.findById(l);
-        
+
         study.setOwner(member.get());
 
+        Study newStudy = study;
+        memberService.notify(newStudy);
+        memberService.notify(member.get());
+
         return studyRepository.save(study);
+    }
+
+    public Study openStudy(Study study){
+        study.open();
+        Optional<Study> openedStudy = studyRepository.save(study);
+        memberService.notify(openedStudy.get());
+        return openedStudy.get();
     }
 }

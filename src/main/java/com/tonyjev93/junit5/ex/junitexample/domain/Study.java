@@ -5,16 +5,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 public class Study {
-    private String name = "JUN";
-
     Member owner;
+    String status;
+    LocalDateTime opendDataTime;
+    private String name = "JUN";
 
     public Study(int i, String java) {
 
     }
+
+    public void open() {
+        this.status = "OPENED";
+        this.opendDataTime = LocalDateTime.now();
+    }
+
+
 }

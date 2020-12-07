@@ -3,6 +3,7 @@ package com.tonyjev93.junit5.ex.junitexample.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -10,8 +11,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class) // Mock Annotation 사용 하여 Mock 생성 가능 <- 선언 안하면 @Mock = Null 됨
@@ -21,6 +23,8 @@ public class StudyServiceTest {
     @Mock
     MemberService memberService;
 
+    @Mock
+    StudyRepository studyRepository;
 
     @Test
     @DisplayName("Mock 서비스")
@@ -35,7 +39,7 @@ public class StudyServiceTest {
         when(memberService.findById(1L)).thenReturn(Optional.of(member));
 
         Optional<Member> optional = memberService.findById(1L); // optional 객체 return 테스트
-        assertNull(optional);
+//        assertNull(optional);
         memberService.validate(2L); // void return 테스트
 
         StudyService studyService = new StudyService(memberService, studyRepository);
@@ -44,7 +48,7 @@ public class StudyServiceTest {
 
     @Test
     @DisplayName("Stub 생성")
-    void createStubTest(@Mock StudyRepository studyRepository) { // Method에서만 Mock 사용 시 Parameter로 적용 가능
+    void createStubTest() {
 
         Member member = new Member();
         member.setId(1L);
@@ -78,7 +82,7 @@ public class StudyServiceTest {
 
     @Test
     @DisplayName("stub 호출 순서")
-    void stubOrderTest(@Mock StudyRepository studyRepository) { // Method에서만 Mock 사용 시 Parameter로 적용 가능
+    void stubOrderTest() { // Method에서만 Mock 사용 시 Parameter로 적용 가능
 
         Member member = new Member();
         member.setId(1L);
@@ -106,7 +110,7 @@ public class StudyServiceTest {
 
     @Test
     @DisplayName("Mock Stubbing 연습문제")
-    void excersise(@Mock StudyRepository studyRepository) {
+    void stubbingExercise() {
 
         StudyService studyService = new StudyService(memberService, studyRepository);
 
@@ -123,6 +127,88 @@ public class StudyServiceTest {
 
         assertNotNull(study.getOwner());
         assertEquals(member, study.getOwner());
+    }
+
+    @Test
+    @DisplayName("Mock 객체 확인")
+    void objectConfirmTest() {
+
+        // Given
+        StudyService studyService = new StudyService(memberService, studyRepository);
+
+        Member member = new Member();
+        member.setId(1L);
+        member.setEmail("tonyJev93@gmail.com");
+
+        when(memberService.findById(1L)).thenReturn(Optional.of(member));
+
+        Study study = new Study(10, "테스트");
+
+        // When
+        studyService.createNewStudy(1L, study);
+
+        // Then
+        verify(memberService, times(1)).notify(study); // notify 함수가 n 번 수행되었는지 확인.
+        verify(memberService, never()).validate(1l); // never <= 한번도 수행되지 않았는지 체크
+
+        // 실행 순서를 체크한다.
+        InOrder inOrder = inOrder(memberService);
+        inOrder.verify(memberService).notify(study);
+        inOrder.verify(memberService).notify(member);
+
+        verifyNoMoreInteractions(memberService); // 더이상 함수 호출을 하지 않는지 체크
+
+    }
+
+    @Test
+    @DisplayName("Mockito 연습 문제")
+    void mockitoExercise() {
+
+        // Given
+        StudyService studyService = new StudyService(memberService, studyRepository);
+
+        Member member = new Member();
+        member.setId(1L);
+        member.setEmail("tonyJev93@gmail.com");
+
+//        when(memberService.findById(1L)).thenReturn(Optional.of(member));
+        given(memberService.findById(1L)).willReturn(Optional.of(member));  // when -> given BDD API로 변형형
+
+        Study study = new Study(10, "테스트");
+
+        // When
+        studyService.createNewStudy(1L, study);
+
+        // Then
+//        verify(memberService, times(1)).notify(study); // notify 함수가 n 번 수행되었는지 확인.
+//        verify(memberService, never()).validate(1l); // never <= 한번도 수행되지 않았는지 체크
+        then(memberService).should(times(1)).notify(study); // verify -> then.should
+        then(memberService).should(times(1)).notify(member); // verify -> then.should
+        then(memberService).should(never()).validate(1l); // verify -> then.should
+
+//        verifyNoMoreInteractions(memberService); // 더이상 함수 호출을 하지 않는지 체크
+        then(memberService).shouldHaveNoMoreInteractions(); // verifyNoMoreInteractions -> then.shouldHaveNoMoreInteractions
+
+    }
+
+    @Test
+    @DisplayName("BDD API 사용하기 : 다른 사용자가 볼 수 있도록 스터디를 공개한다.")
+    void bddApiTest() {
+
+        // Given
+        StudyService studyService = new StudyService(memberService, studyRepository);
+        Study study = new Study(10, "더 자바, 테스트");
+        given(studyRepository.save(study)).willReturn(Optional.of(study));
+
+        // When
+        studyService.openStudy(study);
+
+        System.out.println(study.toString());
+        // Then
+        assertAll(() -> assertEquals(study.getStatus(), "OPENED", "오픈 되지 않았습니다."),
+                () -> assertNotNull(study.getOpendDataTime(), "오픈 날짜가 NULL입니다."));
+        then(memberService).should(times(1)).notify(study);
+
     }
 
 }
