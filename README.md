@@ -7,4 +7,4 @@
 
 
 ## 참고
-- 학습 내용 : https://github.com/TonyJev93/Study/blob/main/Back-end/JUnit.md
+- 학습 내용 : https://github.com/TonyJev93/Study/blob/main/Back-end/TEST/JUnit.md
